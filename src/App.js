@@ -1,8 +1,10 @@
-import { memo, useState } from "react";
+import { memo, useState, useTransition } from "react";
 import products from "./data";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("home");
+  // const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();  // add this hook
   const setStyles = (currentTab) => {
     return {
       backgroundColor: activeTab === currentTab ? "#262626" : "white",
@@ -14,7 +16,9 @@ const App = () => {
     };
   };
   const switchTab = (tab) => {
-    setActiveTab(tab);
+    startTransition(() => { // add this
+      setActiveTab(tab);
+    });
   };
   return (
     <main style={{ backgroundColor: "gray", height: "100vh" }}>
@@ -33,9 +37,10 @@ const App = () => {
         </button>
       </nav>
       <div style={{ color: "white", height: "auto", backgroundColor: "gray" }}>
-        {activeTab === "home" && <h1>Home Page</h1>}
-        {activeTab === "products" && <Products />}
-        {activeTab === "about" && <h1>About Page</h1>}
+        {isPending && <p>Loading...</p>}
+        {!isPending && activeTab === "home" && <h1>Home Page</h1>}
+        {!isPending && activeTab === "products" && <Products />}
+        {!isPending && activeTab === "about" && <h1>About Page</h1>}
       </div>
     </main>
   );
@@ -53,11 +58,11 @@ const Products = memo(() => {
   );
 });
 
-const SlowProduct =  ({ product }) => {
-   const sleep = (ms) => {
+const SlowProduct = ({ product }) => {
+  const sleep = (ms) => {
     const wakeUpTime = Date.now() + ms;
-    while(Date.now() < wakeUpTime) {}
-  }
+    while (Date.now() < wakeUpTime) {}
+  };
   sleep(1);
   return <li>Product: {product.name}</li>;
 };
